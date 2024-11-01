@@ -15,6 +15,10 @@ public class NQueen_problem {
     }
 
     public boolean isSafePosition(int row, int col) {
+        if (firstQueenPlaced && row == firstQueenRow && col == firstQueenCol) {
+            return true; // Allow the manually set position for the first queen
+        }
+
         for (int i = 0; i < row; i++) {
             if (chessBoard[i][col] == 1) return false;
         }
@@ -32,39 +36,49 @@ public class NQueen_problem {
 
     public boolean findSolution() {
         Deque<int[]> queenPositions = new ArrayDeque<>();
-        int currentRow = 0;
+        int currentRow = firstQueenPlaced ? firstQueenRow + 1 : 0; // Start after the first queen's row
         int currentCol = 0;
-
+    
+        // Place the first queen at the specified position, if set
         if (firstQueenPlaced) {
             placeQueen(firstQueenRow, firstQueenCol, queenPositions);
-            currentRow = firstQueenRow + 1;
         }
     
         while (currentRow < boardSize) {
             boolean positionFound = false;
     
             while (currentCol < boardSize) {
-                if (isSafePosition(currentRow, currentCol)) {
-                    placeQueen(currentRow, currentCol, queenPositions);
-                    positionFound = true;
-                    currentRow++;
-                    currentCol = 0; // Reset currentCol for the next row
-                    break;
+                // Skip if this position conflicts with the initial placement
+                if (!firstQueenPlaced || !(currentRow == firstQueenRow && currentCol == firstQueenCol)) {
+                    if (isSafePosition(currentRow, currentCol)) {
+                        placeQueen(currentRow, currentCol, queenPositions);
+                        positionFound = true;
+                        currentRow++;
+                        currentCol = 0; // Reset column for the next row
+                        break;
+                    }
                 }
                 currentCol++;
             }
     
             if (!positionFound) {
                 if (queenPositions.isEmpty()) return false;
+    
                 int[] lastQueen = queenPositions.pop();
                 currentRow = lastQueen[0];
-                currentCol = lastQueen[1] + 1; // Move to the next column for backtracking
-                removeQueen(currentRow, currentCol - 1); // Remove the last placed queen
+                currentCol = lastQueen[1] + 1;
+                removeQueen(currentRow, currentCol - 1);
+    
+                // Prevent backtracking to the manually placed queen's row
+                if (firstQueenPlaced && currentRow == firstQueenRow) {
+                    currentRow++;
+                }
             }
         }
     
         return queenPositions.size() == boardSize;
     }
+    
 
     private void placeQueen(int row, int col, Deque<int[]> queenPositions) {
         chessBoard[row][col] = 1;
@@ -87,10 +101,10 @@ public class NQueen_problem {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        while (true) { // Loop to restart the program if the user wants to try again
+        while (true) {
             int boardSize;
 
-            // Loop until a valid board size is provided
+            // Get board size input
             while (true) {
                 System.out.print("Enter the size of the board (N >= 4): ");
                 boardSize = scanner.nextInt();
@@ -106,22 +120,21 @@ public class NQueen_problem {
             if (choice.equalsIgnoreCase("yes")) {
                 int row, col;
 
-                // Loop until a valid first queen position is provided
                 while (true) {
                     System.out.print("Enter row (1-" + boardSize + "): ");
-                    row = scanner.nextInt() - 1; // Adjust for 0-based index
+                    row = scanner.nextInt() - 1;
                     System.out.print("Enter col (1-" + boardSize + "): ");
                     col = scanner.nextInt() - 1;
 
                     if (row >= 0 && row < boardSize && col >= 0 && col < boardSize) {
-                        //solver.chessBoard[row][col] = 1;
                         solver.firstQueenRow = row;
                         solver.firstQueenCol = col;
                         solver.firstQueenPlaced = true;
                         System.out.println("First queen placed at (" + (row + 1) + ", " + (col + 1) + ")");
                         break;
+                    } else {
+                        System.out.println("Invalid position. Please try again.");
                     }
-                    else System.out.println("Invalid position. Please try again.");
                 }
             }
 
@@ -132,12 +145,11 @@ public class NQueen_problem {
                 System.out.println("No solution found.");
             }
 
-            // Prompt to try again
             System.out.print("Would you like to try again with a different board? (yes/no): ");
             String tryAgain = scanner.next();
             if (tryAgain.equalsIgnoreCase("no")) {
                 System.out.println("Goodbye!");
-                break; // Exit the loop and end the program
+                break;
             }
         }
 
