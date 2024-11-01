@@ -5,6 +5,9 @@ import java.util.Deque;
 public class NQueen_problem {
     private int[][] chessBoard;
     private int boardSize;
+    private boolean firstQueenPlaced;
+    private int firstQueenRow;
+    private int firstQueenCol;
 
     public NQueen_problem(int boardSize) {
         this.boardSize = boardSize;
@@ -31,6 +34,11 @@ public class NQueen_problem {
         Deque<int[]> queenPositions = new ArrayDeque<>();
         int currentRow = 0;
         int currentCol = 0;
+
+        if (firstQueenPlaced) {
+            placeQueen(firstQueenRow, firstQueenCol, queenPositions);
+            currentRow = firstQueenRow + 1;
+        }
     
         while (currentRow < boardSize) {
             boolean positionFound = false;
@@ -55,7 +63,7 @@ public class NQueen_problem {
             }
         }
     
-        return true;
+        return queenPositions.size() == boardSize;
     }
 
     private void placeQueen(int row, int col, Deque<int[]> queenPositions) {
@@ -106,11 +114,14 @@ public class NQueen_problem {
                     col = scanner.nextInt() - 1;
 
                     if (row >= 0 && row < boardSize && col >= 0 && col < boardSize) {
-                        solver.chessBoard[row][col] = 1;
+                        //solver.chessBoard[row][col] = 1;
+                        solver.firstQueenRow = row;
+                        solver.firstQueenCol = col;
+                        solver.firstQueenPlaced = true;
                         System.out.println("First queen placed at (" + (row + 1) + ", " + (col + 1) + ")");
                         break;
                     }
-                    System.out.println("Invalid position. Please try again.");
+                    else System.out.println("Invalid position. Please try again.");
                 }
             }
 
